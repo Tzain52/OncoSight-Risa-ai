@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, AlertTriangle, ArrowRight, Dna, Pill, TrendingUp, XCircle } from "lucide-react";
+import { Activity, AlertCircle, AlertTriangle, ArrowRight, Compass, Dna, Pill, TrendingUp, XCircle } from "lucide-react";
 
 import type { MasterAIResponse } from "@/types/patient-insights";
 import type { Patient } from "@/types/patient";
@@ -420,29 +420,49 @@ export function DiagnosisTab({ patient, aiInsights }: DiagnosisTabProps) {
           </div>
         </div>
 
-        <div className={CARD}>
-          <div className="flex items-center gap-3">
-            <ArrowRight className="h-5 w-5 text-slate-500" />
-            <p className={SECTION_HEADER}>Staging Trajectory</p>
+        <div className={`${CARD} overflow-hidden border border-slate-200 bg-white shadow-lg`}>
+          <div className="flex items-center gap-3 text-slate-500">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+              <Compass className="h-5 w-5" />
+            </span>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Staging Trajectory</p>
           </div>
-          <div className="mt-6 flex flex-col gap-4 text-center sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className={LABEL_TEXT}>Initial</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{stages.initial}</p>
+
+          <div className="mt-8 space-y-8 text-slate-900">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Initial</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{stages.initial}</p>
+              </div>
+
+              <div className="flex flex-col items-center gap-3 text-center sm:min-w-[180px]">
+                <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <ArrowRight className="h-4 w-4" />
+                  Trajectory
+                </div>
+                <span
+                  className={`${BADGE} text-sm ${
+                    computedSummary
+                      ? "bg-slate-900 text-white shadow-lg"
+                      : "border border-dashed border-slate-300 bg-transparent text-slate-400 animate-pulse"
+                  }`}
+                >
+                  {computedSummary || "Analyzing trajectory..."}
+                </span>
+              </div>
+
+              <div className="text-right sm:text-left">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Current</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{stages.current}</p>
+              </div>
             </div>
-            <div className="inline-flex flex-col items-center gap-2">
-              <ArrowRight className="h-5 w-5 text-slate-400" />
-              <span
-                className={`${BADGE} ${
-                  computedSummary ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500 animate-pulse"
-                }`}
-              >
-                {computedSummary || "Analyzing trajectory..."}
-              </span>
-            </div>
-            <div>
-              <p className={LABEL_TEXT}>Current</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{stages.current}</p>
+
+            <div className="relative mx-auto h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-slate-200 to-transparent">
+              <div className="absolute left-0 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-slate-200 shadow-[0_0_10px_rgba(148,163,184,0.5)]" />
+              <div className="absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)]" />
+              <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-white">
+                <div className="absolute inset-1 rounded-full bg-slate-900" />
+              </div>
             </div>
           </div>
         </div>
