@@ -140,7 +140,7 @@ const getTreatmentHistory = (patient: Patient): TreatmentLine[] => {
       };
       const endMeta = normalizeEndStatus(event.endDate);
       return {
-        lineLabel: event.line ? `Line ${event.line}` : `Line ${index + 1}`,
+        lineLabel: event.line ? `Line ${event.line}` : "Line 0",
         regimen: event.regimen || event.response || "Regimen not documented",
         startDate: event.startDate || "Start N/A",
         endDate: endMeta.label,
@@ -396,13 +396,14 @@ export function DiagnosisTab({ patient, aiInsights }: DiagnosisTabProps) {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className={CARD}>
-          <div className="flex items-center gap-3">
-            <Activity className="h-5 w-5 text-slate-500" />
-            <p className={SECTION_HEADER}>Metastatic Spread & Status</p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Activity className="h-5 w-5 text-slate-500" />
+              <p className={SECTION_HEADER}>Metastatic Spread & Status</p>
+            </div>
+            <span className={`${BADGE} ${recurrence.classes}`}>{recurrence.label}</span>
           </div>
           <div className="mt-5 space-y-4">
-            <span className={`${BADGE} ${recurrence.classes}`}>{recurrence.label}</span>
-
             <div className="space-y-2">
               <p className={LABEL_TEXT}>Metastatic Sites</p>
               <div className="flex flex-wrap gap-2">

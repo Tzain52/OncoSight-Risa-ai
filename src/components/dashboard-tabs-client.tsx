@@ -7,6 +7,8 @@ import { DiagnosisTab } from "@/components/tabs/diagnosis-tab";
 import { InvestigationsTab } from "@/components/tabs/investigations-tab";
 import { PatientTab } from "@/components/tabs/patient-tab";
 import { ReferencesTab } from "@/components/tabs/references-tab";
+import { DASHBOARD_SHORTCUT_EVENT } from "@/lib/dashboard-shortcuts";
+import type { DashboardShortcut } from "@/lib/dashboard-shortcuts";
 import type { MasterAIResponse } from "@/types/patient-insights";
 import type { Patient } from "@/types/patient";
 
@@ -18,35 +20,52 @@ interface DashboardTabsClientProps {
   aiInsights: MasterAIResponse | null;
 }
 
-const SHORTCUTS = [
+type ShortcutConfig = {
+  keys: string[];
+  handler: (setMain: (tab: MainTab) => void, setPanel: (panel: InvestigationsPanel) => void) => void;
+};
+
+const dispatchShortcut = (action: DashboardShortcut) => {
+  window.dispatchEvent(new CustomEvent(DASHBOARD_SHORTCUT_EVENT, { detail: { action } }));
+};
+
+const SHORTCUTS: ShortcutConfig[] = [
   {
     keys: ["o", "p"],
-    handler: (setMain: (tab: MainTab) => void) => setMain("patient"),
+    handler: (setMain) => setMain("patient"),
   },
   {
     keys: ["o", "d"],
-    handler: (setMain: (tab: MainTab) => void) => setMain("diagnosis"),
+    handler: (setMain) => setMain("diagnosis"),
   },
   {
     keys: ["o", "i"],
-    handler: (setMain: (tab: MainTab) => void, setPanel: (panel: InvestigationsPanel) => void) => {
+    handler: (setMain, setPanel) => {
       setMain("investigations");
       setPanel("pathology");
     },
   },
   {
-    keys: ["o", "i", "r"],
-    handler: (setMain: (tab: MainTab) => void, setPanel: (panel: InvestigationsPanel) => void) => {
+    keys: ["o", "r"],
+    handler: (setMain, setPanel) => {
       setMain("investigations");
       setPanel("radiology");
     },
   },
   {
-    keys: ["o", "i", "l"],
-    handler: (setMain: (tab: MainTab) => void, setPanel: (panel: InvestigationsPanel) => void) => {
+    keys: ["o", "l"],
+    handler: (setMain, setPanel) => {
       setMain("investigations");
       setPanel("laboratory");
     },
+  },
+  {
+    keys: ["o", "e"],
+    handler: () => dispatchShortcut("export"),
+  },
+  {
+    keys: ["o", "b"],
+    handler: () => dispatchShortcut("back"),
   },
 ];
 
