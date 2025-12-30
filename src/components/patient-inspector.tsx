@@ -24,6 +24,8 @@ const COMPLEX_FIELDS: (keyof Patient)[] = [
 const FIELD_LABELS: Record<keyof Patient, string> = {
   patientId: "Patient ID",
   name: "Name",
+  dateOfBirth: "Date of Birth",
+  birthDate: "Birth Date",
   bmi: "BMI",
   bsa: "BSA",
   age: "Age",
