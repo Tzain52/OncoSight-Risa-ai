@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 import type { Patient } from "@/types/patient";
+import { BADGE, BODY_TEXT, CARD, CARD_TITLE, LABEL_TEXT, SECTION_HEADER, SIDEBAR_WIDTH } from "../design-system";
 
 type TumorTrendPoint = {
   date?: string;
@@ -160,12 +161,10 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
   return (
     <div className="flex min-h-[520px] gap-6">
       <div className="flex-1 space-y-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className={CARD}>
           <div className="flex flex-wrap justify-between gap-6">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                Response status
-              </p>
+              <p className={SECTION_HEADER}>Response Status</p>
               <div
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${
                   RECIST_BADGE_MAP[recistStatus] ?? "border-slate-200 bg-slate-50 text-slate-700"
@@ -174,31 +173,29 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
                 <LineChartIcon className="h-4 w-4" />
                 {recistStatus}
               </div>
-              <p className="text-sm text-slate-500">{trendSummary}</p>
+              <p className={BODY_TEXT}>{trendSummary}</p>
             </div>
 
-            <div className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Latest scan</p>
+            <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className={LABEL_TEXT}>Latest Scan</p>
               <p className="mt-2 text-sm font-semibold text-slate-900">
                 {latestScan || "No recent scan summary available."}
               </p>
               {newLesionsFlag && (
-                <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+                <span className={`${BADGE} mt-4 inline-flex items-center gap-2 bg-rose-50 text-rose-700`}>
                   <AlertTriangle className="h-4 w-4" />
                   New lesions reported
-                </div>
+                </span>
               )}
             </div>
           </div>
         </section>
 
         {hasTrend ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className={CARD}>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                Recist trajectory
-              </p>
-              <p className="text-xs text-slate-400">{tumorTrend.length} scans</p>
+              <p className={SECTION_HEADER}>RECIST Trajectory</p>
+              <p className={LABEL_TEXT}>{tumorTrend.length} scans</p>
             </div>
             <div className="mt-4 h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -230,61 +227,56 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
             </div>
           </section>
         ) : (
-          <section className="flex h-72 items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+          <section className={`${CARD} flex h-72 items-center justify-center border-dashed text-sm text-slate-500`}>
             Insufficient structured RECIST data to render trajectory.
           </section>
         )}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className={CARD}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                Detailed measurements
-              </p>
-              <p className="mt-1 text-base font-semibold text-slate-900">Target lesion assessment</p>
+              <p className={SECTION_HEADER}>Detailed Measurements</p>
+              <p className={CARD_TITLE}>Target lesion assessment</p>
             </div>
           </div>
           <div className="mt-4 space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Measurements</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className={LABEL_TEXT}>Measurements</p>
               <p className="mt-2 text-sm text-slate-800">
                 {measurements || "RECIST measurements not documented."}
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Impression keywords</p>
+              <p className={LABEL_TEXT}>Impression keywords</p>
               {keywordTokens.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {keywordTokens.map((token) => (
-                    <span
-                      key={token}
-                      className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
+                    <span key={token} className={`${BADGE} bg-slate-100 text-slate-700`}>
                       {token}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-slate-500">No structured radiology keywords provided.</p>
+                <p className={BODY_TEXT}>No structured radiology keywords provided.</p>
               )}
             </div>
           </div>
         </section>
       </div>
 
-      <aside className="w-64 shrink-0 border-l border-slate-200 pl-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Scan timeline</p>
+      <aside className={`${SIDEBAR_WIDTH} shrink-0 rounded-xl border border-slate-200 bg-white p-4`}>
+        <p className={SECTION_HEADER}>Scan Timeline</p>
         {radiologyReports.length ? (
-          <ul className="mt-4 space-y-4">
+          <ul className="space-y-4">
             {radiologyReports.map((report) => (
               <li key={`${report.date}-${report.modality}-${report.summary}`} className="space-y-2">
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-slate-900">{formatDate(report.date)}</p>
-                  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                  <span className={`${BADGE} bg-slate-100 text-slate-700`}>
                     {report.modality || "Imaging"}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">{report.summary || "Summary unavailable."}</p>
+                <p className={BODY_TEXT}>{report.summary || "Summary unavailable."}</p>
                 {report.link && (
                   <a
                     href={report.link}
@@ -299,7 +291,7 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
             ))}
           </ul>
         ) : (
-          <p className="mt-4 text-sm text-slate-500">No imaging history available.</p>
+          <p className={BODY_TEXT}>No imaging history available.</p>
         )}
       </aside>
     </div>

@@ -3,6 +3,7 @@
 import { Activity, AlertTriangle, ArrowRight, Dna, Pill, XCircle } from "lucide-react";
 
 import type { Patient } from "@/types/patient";
+import { BADGE, BODY_TEXT, CARD, CARD_TITLE, LABEL_TEXT, SECTION_HEADER } from "./design-system";
 
 interface DiagnosisTabProps {
   patient: Patient;
@@ -293,147 +294,119 @@ export function DiagnosisTab({ patient }: DiagnosisTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Tier 1: Identity & Molecular Hero */}
-      <section className="rounded-4xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 p-6 text-white shadow-lg">
+      <section className={CARD}>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.45em] text-white/60">Clinical Identity</p>
-            <h1 className="text-3xl font-semibold leading-tight">
+          <div className="space-y-2">
+            <p className={SECTION_HEADER}>Clinical Identity</p>
+            <h2 className="text-lg font-semibold text-slate-900">
               {patient.primaryDiagnosis || "Primary diagnosis not documented"}
-            </h1>
-            <p className="text-sm text-white/70">
+            </h2>
+            <p className={BODY_TEXT}>
               {patient.histologicType || "Histology not documented"}{" "}
               {patient.tumorGrade ? `• Grade ${patient.tumorGrade}` : null}
             </p>
           </div>
 
-          <div className="w-full max-w-xl space-y-4 rounded-3xl border border-white/10 bg-white/5 p-4">
+          <div className="w-full max-w-xl space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
             <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.45em] text-white/60">
+              <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <Dna className="h-4 w-4" />
                 Driver Mutation
               </div>
-              {!driverMutation && (
-                <span className="text-[11px] uppercase tracking-[0.3em] text-white/50">
-                  Awaiting sequencing
-                </span>
-              )}
+              {!driverMutation && <span className={LABEL_TEXT}>Awaiting sequencing</span>}
             </div>
             <div
-              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ${
-                driverMutation
-                  ? "bg-emerald-100 text-emerald-800"
-                  : "border border-dashed border-white/30 bg-transparent text-white/70"
+              className={`${BADGE} ${
+                driverMutation ? "bg-emerald-50 text-emerald-700" : "border border-dashed border-slate-300 text-slate-600"
               }`}
             >
               {driverMutation || "No actionable driver detected"}
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${pillTone(pdL1Percent)}`}>
+              <span className={`${BADGE} ${pillTone(pdL1Percent)}`}>
                 PD-L1 TPS: {pdL1Percent !== null ? `${pdL1Percent}%` : "Not reported"}
               </span>
-              <span className="rounded-full bg-slate-100/90 px-3 py-1 text-xs font-semibold text-slate-800">
-                TMB: {tmbDisplay}
-              </span>
-              <span className="rounded-full bg-slate-100/90 px-3 py-1 text-xs font-semibold text-slate-800">
-                MSI: {msiDisplay}
-              </span>
+              <span className={`${BADGE} bg-slate-100 text-slate-700`}>TMB: {tmbDisplay}</span>
+              <span className={`${BADGE} bg-slate-100 text-slate-700`}>MSI: {msiDisplay}</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tier 2: Disease Architecture */}
-      <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className={CARD}>
           <div className="flex items-center gap-3">
             <Activity className="h-5 w-5 text-slate-500" />
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-              Metastatic Spread & Status
-            </p>
+            <p className={SECTION_HEADER}>Metastatic Spread & Status</p>
           </div>
           <div className="mt-5 space-y-4">
-            <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${recurrence.classes}`}
-            >
-              {recurrence.label}
-            </span>
+            <span className={`${BADGE} ${recurrence.classes}`}>{recurrence.label}</span>
 
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Metastatic Sites</p>
+              <p className={LABEL_TEXT}>Metastatic Sites</p>
               <div className="flex flex-wrap gap-2">
                 {metastaticSites.length ? (
                   metastaticSites.map((site, idx) => (
-                    <span
-                      key={`${site}-${idx}`}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700"
-                    >
+                    <span key={`${site}-${idx}`} className={`${BADGE} border border-slate-200 text-slate-700`}>
                       {site}
                     </span>
                   ))
                 ) : (
-                  <span className="text-sm text-slate-500">No distant metastasis documented.</span>
+                  <span className={BODY_TEXT}>No distant metastasis documented.</span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className={CARD}>
           <div className="flex items-center gap-3">
             <ArrowRight className="h-5 w-5 text-slate-500" />
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-              Staging Trajectory
-            </p>
+            <p className={SECTION_HEADER}>Staging Trajectory</p>
           </div>
           <div className="mt-6 flex flex-col gap-4 text-center sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Initial</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{stages.initial}</p>
+              <p className={LABEL_TEXT}>Initial</p>
+              <p className="mt-1 text-lg font-semibold text-slate-900">{stages.initial}</p>
             </div>
             <div className="inline-flex flex-col items-center gap-2">
               <ArrowRight className="h-5 w-5 text-slate-400" />
-              {computedSummary ? (
-                <span className="rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold text-white">
-                  {computedSummary}
-                </span>
-              ) : (
-                <span className="rounded-full bg-slate-200 px-4 py-1 text-xs font-semibold text-slate-500 animate-pulse">
-                  Analyzing trajectory...
-                </span>
-              )}
+              <span
+                className={`${BADGE} ${
+                  computedSummary ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500 animate-pulse"
+                }`}
+              >
+                {computedSummary || "Analyzing trajectory..."}
+              </span>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Current</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{stages.current}</p>
+              <p className={LABEL_TEXT}>Current</p>
+              <p className="mt-1 text-lg font-semibold text-slate-900">{stages.current}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tier 3: Treatment History */}
-      <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-          Therapeutic Timeline
-        </p>
-        <div className="mt-5 space-y-4">
+      <section className={CARD}>
+        <p className={SECTION_HEADER}>Therapeutic Timeline</p>
+        <div className="space-y-4">
           {treatmentHistory.map((line, idx) => (
             <div
               key={`${line.lineLabel}-${idx}`}
-              className={`rounded-2xl border border-slate-200/80 px-4 py-4 text-sm ${
+              className={`rounded-xl border border-slate-200 px-4 py-4 ${
                 line.isCurrent ? "bg-slate-50" : "bg-white"
               }`}
             >
               <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                <span className={`${BADGE} bg-slate-900 text-white`}>
                   {line.lineLabel}
                 </span>
-                <div className="flex items-center gap-2 text-base font-semibold text-slate-900">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                   <Pill className="h-4 w-4 text-slate-500" />
                   {line.regimen}
                   {line.isCurrent && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                    <span className={`${BADGE} flex items-center gap-1 bg-emerald-50 text-emerald-700`}>
                       <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                       Active
                     </span>
@@ -441,10 +414,10 @@ export function DiagnosisTab({ patient }: DiagnosisTabProps) {
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-6 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="mt-3 flex flex-wrap items-center gap-6 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <span>
                   Dates:{" "}
-                  <span className="text-slate-900 normal-case tracking-normal">
+                  <span className="text-slate-900 normal-case tracking-normal text-sm font-medium">
                     {line.startDate} — {line.endDate}
                   </span>
                 </span>
@@ -456,13 +429,13 @@ export function DiagnosisTab({ patient }: DiagnosisTabProps) {
                 </span>
               </div>
               {line.toxicities && (
-                <div className="mt-3 flex items-start gap-2 rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                <div className="mt-3 flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
                   <Activity className="mt-0.5 h-4 w-4 text-slate-500" />
                   <span>Toxicities: {line.toxicities}</span>
                 </div>
               )}
               {line.status?.toLowerCase() === "ended" && line.reasonStopped && (
-                <div className="mt-3 flex items-center gap-2 rounded-2xl bg-rose-50/40 px-3 py-2 text-sm font-semibold">
+                <div className="mt-3 flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
                   {(() => {
                     const meta = discontinuationMeta(line.reasonStopped);
                     const Icon = meta.icon;

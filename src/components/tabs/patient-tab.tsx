@@ -2,6 +2,16 @@
 
 import { getPerformanceBadge } from "@/lib/performance";
 import type { Patient } from "@/types/patient";
+import {
+  BADGE,
+  BODY_TEXT,
+  CARD,
+  CARD_TITLE,
+  GRID_GAP,
+  LABEL_TEXT,
+  SECTION_HEADER,
+  SOFT_CARD,
+} from "./design-system";
 
 interface PatientTabProps {
   patient: Patient;
@@ -47,7 +57,6 @@ const formatFlag = (raw?: string | null, fallbackBoolean?: boolean | null) => {
 
 export function PatientTab({ patient }: PatientTabProps) {
   const performanceBadge = getPerformanceBadge(patient.performanceStatus);
-  const race = (patient as Patient & { race?: string }).race ?? "Not recorded";
   const mrn = formatValue(patient.patientId, "N/A");
 
   const smokingHistory =
@@ -70,47 +79,38 @@ export function PatientTab({ patient }: PatientTabProps) {
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 lg:grid-cols-3">
-        {/* Column 1: Identity & Biometrics */}
-        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Patient Identity & Biometrics
-          </p>
-
-          <div className="mt-5 space-y-4 text-sm text-slate-600">
+      <section className={`grid ${GRID_GAP} lg:grid-cols-3`}>
+        <div className={CARD}>
+          <p className={SECTION_HEADER}>Patient Identity & Biometrics</p>
+          <div className="space-y-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Identity</p>
-              <div className="mt-2 space-y-1 text-base font-semibold text-slate-900">
-                <p>{formatValue(patient.name, "Name not recorded")}</p>
-                <p className="text-sm font-medium text-slate-500">MRN • {mrn}</p>
+              <p className={LABEL_TEXT}>Identity</p>
+              <div className="mt-2 space-y-1">
+                <p className={CARD_TITLE}>{formatValue(patient.name, "Name not recorded")}</p>
+                <p className={LABEL_TEXT}>MRN • {mrn}</p>
               </div>
-              <div className="mt-3 flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-slate-500">
-                <span>Age: {formatValue(patient.age ?? null, "N/A")}</span>
-                <span>Sex: {formatValue(patient.sex, "N/A")}</span>
-                <span>Race: {race}</span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className={`${BADGE} bg-slate-100 text-slate-700`}>
+                  Age: {formatValue(patient.age ?? null, "N/A")}
+                </span>
+                <span className={`${BADGE} bg-slate-100 text-slate-700`}>
+                  Sex: {formatValue(patient.sex, "N/A")}
+                </span>
               </div>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Biometrics</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">BSA</p>
-                  <p
-                    className={`mt-2 text-xl font-bold ${
-                      bsaDisplay === "Not Recorded" ? "text-slate-400" : "text-slate-900"
-                    }`}
-                  >
+              <p className={LABEL_TEXT}>Biometrics</p>
+              <div className={`mt-3 grid ${GRID_GAP} sm:grid-cols-2`}>
+                <div className={SOFT_CARD}>
+                  <p className={LABEL_TEXT}>BSA</p>
+                  <p className={`mt-2 text-xl font-semibold ${bsaDisplay === "Not Recorded" ? "text-slate-400" : "text-slate-900"}`}>
                     {bsaDisplay}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">BMI</p>
-                  <p
-                    className={`mt-2 text-xl font-bold ${
-                      bmiDisplay === "Not Recorded" ? "text-slate-400" : "text-slate-900"
-                    }`}
-                  >
+                <div className={SOFT_CARD}>
+                  <p className={LABEL_TEXT}>BMI</p>
+                  <p className={`mt-2 text-xl font-semibold ${bmiDisplay === "Not Recorded" ? "text-slate-400" : "text-slate-900"}`}>
                     {bmiDisplay}
                   </p>
                 </div>
@@ -119,43 +119,37 @@ export function PatientTab({ patient }: PatientTabProps) {
           </div>
         </div>
 
-        {/* Column 2: Performance & Social */}
-        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Performance & Social
-          </p>
-
-          <div className="mt-5 space-y-6">
+        <div className={CARD}>
+          <p className={SECTION_HEADER}>Performance & Social</p>
+          <div className="space-y-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Performance Status</p>
+              <p className={LABEL_TEXT}>Performance Status</p>
               <div className="mt-3 inline-flex items-center gap-2">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${performanceBadge.classes}`}
-                >
+                <span className={`${BADGE} ${performanceBadge.classes}`}>
                   {formatValue(patient.performanceStatus, "Not recorded")}
                 </span>
               </div>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Social History</p>
-              <div className="mt-3 space-y-3 text-sm font-semibold text-slate-800">
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/60 px-3 py-2">
+              <p className={LABEL_TEXT}>Social History</p>
+              <div className="mt-3 space-y-3">
+                <div className={`${SOFT_CARD} flex items-center gap-3`}>
                   <span className="text-lg" aria-hidden>
                     🚬
                   </span>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Smoking</p>
-                    <p>{formatValue(smokingHistory, "Not recorded")}</p>
+                    <p className={LABEL_TEXT}>Smoking</p>
+                    <p className={CARD_TITLE}>{formatValue(smokingHistory, "Not recorded")}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/60 px-3 py-2">
+                <div className={`${SOFT_CARD} flex items-center gap-3`}>
                   <span className="text-lg" aria-hidden>
                     🍷
                   </span>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Alcohol</p>
-                    <p>{formatValue(alcoholHistory, "Not recorded")}</p>
+                    <p className={LABEL_TEXT}>Alcohol</p>
+                    <p className={CARD_TITLE}>{formatValue(alcoholHistory, "Not recorded")}</p>
                   </div>
                 </div>
               </div>
@@ -163,13 +157,9 @@ export function PatientTab({ patient }: PatientTabProps) {
           </div>
         </div>
 
-        {/* Column 3: Safety & History */}
-        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Safety Profile & History
-          </p>
-
-          <div className="mt-5 space-y-5">
+        <div className={CARD}>
+          <p className={SECTION_HEADER}>Safety Profile & History</p>
+          <div className="space-y-5">
             <div className="space-y-3">
               {[
                 {
@@ -187,29 +177,23 @@ export function PatientTab({ patient }: PatientTabProps) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
-                    item.flag
-                      ? "border-amber-200 bg-amber-50 text-amber-800"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  className={`${SOFT_CARD} border ${
+                    item.flag ? "border-amber-200 bg-amber-50 text-amber-800" : "border-emerald-200 bg-emerald-50 text-emerald-800"
                   }`}
                 >
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">{item.label}</p>
-                  <p className="mt-1">{item.flag ? item.riskText : item.safeText}</p>
+                  <p className={LABEL_TEXT}>{item.label}</p>
+                  <p className="mt-1 text-sm font-semibold">{item.flag ? item.riskText : item.safeText}</p>
                 </div>
               ))}
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Comorbidities</p>
+              <p className={LABEL_TEXT}>Comorbidities</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {comorbidities.map((item, index) => (
                   <span
                     key={`${item}-${index}`}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      isHighRiskComorbidity(item)
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
+                    className={`${BADGE} ${isHighRiskComorbidity(item) ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"}`}
                   >
                     {item}
                   </span>
@@ -220,15 +204,9 @@ export function PatientTab({ patient }: PatientTabProps) {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-slate-50/80 p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Narrative Baseline
-          </p>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-slate-700">
-          {patient.overallDiseaseCourseSummary || "No narrative baseline documented."}
-        </p>
+      <section className={CARD}>
+        <p className={SECTION_HEADER}>Narrative Baseline</p>
+        <p className={BODY_TEXT}>{patient.overallDiseaseCourseSummary || "No narrative baseline documented."}</p>
       </section>
     </div>
   );

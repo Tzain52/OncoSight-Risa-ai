@@ -3,7 +3,7 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { motion } from "framer-motion";
 import { Activity, FileImage } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -18,10 +18,15 @@ import type { BiomarkerPoint, Patient, RadiologyDocument } from "@/types/patient
 import type { MasterAIResponse } from "@/types/patient-insights";
 import { PathologyView } from "./investigations/pathology-view";
 import { RadiologyView } from "./investigations/radiology-view";
+import { LabsView } from "./investigations/labs-view";
+
+type InvestigationsPanel = "pathology" | "radiology" | "labs";
 
 interface InvestigationsTabProps {
   patient: Patient;
   aiInsights?: MasterAIResponse | null;
+  activePanel?: InvestigationsPanel;
+  onPanelChange?: (panel: InvestigationsPanel) => void;
 }
 
 const MARKER_PRIORITY = ["ER", "PR", "HER2", "KI-67", "PD-L1"];
@@ -107,13 +112,37 @@ const LabsTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function InvestigationsTab({ patient, aiInsights }: InvestigationsTabProps) {
+const TAB_SHORTCUTS: { combo: string[]; target: string }[] = [
+  { combo: ["o", "p"], target: "patient" },
+  { combo: ["o", "d"], target: "diagnosis" },
+  { combo: ["o", "i"], target: "pathology" },
+  { combo: ["o", "r"], target: "radiology" },
+  { combo: ["o", "l"], target: "labs" },
+];
+
+export function InvestigationsTab({ patient, aiInsights, activePanel, onPanelChange }: InvestigationsTabProps) {
   const molecularMap = useMemo(() => parseMarkerMap(patient.ihcMarkers), [patient.ihcMarkers]);
   const biomarkerSeries = useMemo(() => parseBiomarkerTrend(patient.biomarkerTrend), [patient]);
   const radiologyReports = useMemo(
     () => normalizeRadiologyReports(patient.radiologyReports),
     [patient.radiologyReports],
   );
+  const [internalPanel, setInternalPanel] = useState<InvestigationsPanel>("pathology");
+
+  useEffect(() => {
+    setInternalPanel("pathology");
+  }, [patient.patientId]);
+
+  const panelValue = activePanel ?? internalPanel;
+
+  const handleTabChange = (value: string) => {
+    const cast = value as InvestigationsPanel;
+    if (onPanelChange) {
+      onPanelChange(cast);
+    } else {
+      setInternalPanel(cast);
+    }
+  };
 
   const hasBiomarkerTrend = biomarkerSeries.length >= 2;
   const biomarkerName = biomarkerSeries[0]?.markerName ?? "Biomarker";
@@ -138,7 +167,7 @@ export function InvestigationsTab({ patient, aiInsights }: InvestigationsTabProp
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="rounded-3xl border border-slate-200/80 bg-white/95 p-4 shadow-sm"
       >
-        <Tabs.Root defaultValue="pathology" className="w-full">
+        <Tabs.Root value={panelValue} onValueChange={handleTabChange} className="w-full">
           <Tabs.List className="grid h-12 w-full max-w-lg grid-cols-3 rounded-full bg-slate-100/80 p-1 text-sm font-semibold text-slate-500">
             <Tabs.Trigger
               value="pathology"
@@ -170,95 +199,7 @@ export function InvestigationsTab({ patient, aiInsights }: InvestigationsTabProp
             </Tabs.Content>
 
             <Tabs.Content value="labs" className="focus:outline-none">
-              <div className="grid gap-6 lg:grid-cols-3">
-                <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-sm lg:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                        Smart trend
-                      </p>
-                      <p className="text-base font-semibold text-slate-900">{biomarkerName}</p>
-                    </div>
-                    {hasBiomarkerTrend && (
-                      <p className="text-xs font-medium uppercase tracking-[0.25em] text-slate-400">
-                        {biomarkerSeries.length} points
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="mt-4 h-72">
-                    {hasBiomarkerTrend ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                          data={biomarkerSeries.map((point) => ({
-                            ...point,
-                            formattedDate: formatDate(point.date),
-                          }))}
-                          margin={{ left: 0, right: 0, top: 10, bottom: 0 }}
-                        >
-                          <defs>
-                            <linearGradient id="trend" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
-                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.05} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                          <XAxis
-                            dataKey="formattedDate"
-                            tick={{ fill: "#475569", fontSize: 12 }}
-                            stroke="#94a3b8"
-                          />
-                          <YAxis tick={{ fill: "#475569", fontSize: 12 }} stroke="#94a3b8" />
-                          <Tooltip content={<LabsTooltip />} />
-                          <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#2563eb"
-                            fill="url(#trend)"
-                            strokeWidth={3}
-                            activeDot={{ r: 5 }}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex h-full items-center justify-center rounded-2xl bg-slate-50 text-sm text-slate-500">
-                        Insufficient data for trending.
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                <section className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-6 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    Biomarker stats
-                  </p>
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Current</p>
-                      <p className="mt-1 text-2xl font-semibold text-slate-900">
-                        {currentValue ?? "—"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Peak</p>
-                        <p className="mt-1 text-xl font-semibold text-rose-600">
-                          {Number.isFinite(peakValue ?? NaN) ? peakValue : "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Lowest</p>
-                        <p className="mt-1 text-xl font-semibold text-emerald-600">
-                          {Number.isFinite(lowestValue ?? NaN) ? lowestValue : "—"}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      Values derived from structured biomarker timeline when available.
-                    </p>
-                  </div>
-                </section>
-              </div>
+              <LabsView patient={patient} aiInsights={aiInsights} />
             </Tabs.Content>
           </div>
         </Tabs.Root>

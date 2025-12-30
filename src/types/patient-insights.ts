@@ -44,5 +44,6 @@ export interface MasterAIResponse {
     pathology_summary?: string | null;
     pathology_comparison_text: string | null;
     pathology_deltas: PathologyDelta[] | null;
+    labs_summary?: string | null;
   };
 }

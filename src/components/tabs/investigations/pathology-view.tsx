@@ -5,6 +5,17 @@ import { AlertCircle, FileText, GitCompare, Microscope } from "lucide-react";
 
 import type { MasterAIResponse, PathologyDelta } from "@/types/patient-insights";
 import type { PathologyDetails, Patient } from "@/types/patient";
+import {
+  BADGE,
+  BODY_TEXT,
+  CARD,
+  CARD_TITLE,
+  GRID_GAP,
+  LABEL_TEXT,
+  SECTION_HEADER,
+  SIDEBAR_WIDTH,
+  SOFT_CARD,
+} from "../design-system";
 
 interface PathologyViewProps {
   patient: Patient;
@@ -574,30 +585,30 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
   return (
     <div className="flex h-full gap-6">
       <div className="flex-1 space-y-6">
-        <section className="rounded-3xl border border-indigo-100 bg-indigo-50/50 p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow">
-              <GitCompare className="h-5 w-5 text-indigo-600" />
-            </div>
+        <section className={CARD}>
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-600">Insight</p>
-              <p className="text-base font-semibold text-slate-900">
+              <p className={SECTION_HEADER}>Insight</p>
+              <p className={CARD_TITLE}>
                 {hasMultipleReports
                   ? `Comparison · ${previousReport?.dateLabel ?? "Prior"} → ${latestReport?.dateLabel ?? "Latest"}`
                   : `Single report · ${latestReport?.dateLabel ?? "Undated"}`}
               </p>
+              {clinicalInterpretation && (
+                <p className={`${BODY_TEXT} mt-2`}>
+                  <span className="font-semibold text-slate-900">Clinical interpretation:</span> {clinicalInterpretation}
+                </p>
+              )}
+            </div>
+            <div className={`${BADGE} bg-indigo-50 text-indigo-700`}>
+              <GitCompare className="mr-2 h-4 w-4" />
+              {hasMultipleReports ? "Comparison" : "Single report"}
             </div>
           </div>
 
-          {clinicalInterpretation && (
-            <p className="mt-3 text-sm leading-relaxed text-slate-800">
-              <span className="font-semibold text-slate-900">Clinical interpretation:</span> {clinicalInterpretation}
-            </p>
-          )}
-
           {hasMultipleReports && (
-            <div className="mt-4 overflow-hidden rounded-2xl border border-indigo-100 bg-white">
-              <div className="grid grid-cols-[2fr_3fr_1fr] bg-indigo-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+              <div className="grid grid-cols-[2fr_3fr_1fr] bg-slate-50 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">
                 <span>Marker</span>
                 <span>Previous → Current</span>
                 <span className="text-right">Trend</span>
@@ -606,10 +617,10 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
                 structuralDeltas.slice(0, 5).map((delta) => (
                   <div
                     key={`${delta.marker}-${delta.trend}-${delta.new_value}-${delta.old_value}`}
-                    className="grid grid-cols-[2fr_3fr_1fr] border-t border-slate-100 px-4 py-2 text-sm"
+                    className="grid grid-cols-[2fr_3fr_1fr] border-t border-slate-100 px-4 py-3 text-sm"
                   >
                     <span className="font-semibold text-slate-900">{delta.marker}</span>
-                    <span className="text-slate-700">
+                    <span className={BODY_TEXT}>
                       {delta.old_value ?? "—"} <span className="text-slate-400">→</span> {delta.new_value ?? "—"}
                     </span>
                     <span className={`flex items-center justify-end gap-1 text-xs font-semibold ${trendTone(delta.trend)}`}>
@@ -628,49 +639,46 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
           )}
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+        <section className={CARD}>
+          <div className="flex items-start justify-between border-b border-slate-100 pb-5">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                <Microscope className="h-4 w-4 text-slate-500" />
-                Synoptic Report Detail
-              </div>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              <p className={SECTION_HEADER}>Synoptic Report Detail</p>
+              <h2 className="text-lg font-semibold text-slate-900">
                 {selectedReport?.diagnosis || selectedReport?.histotype || "Pathology diagnosis not provided"}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className={`${LABEL_TEXT} mt-1`}>
                 {[selectedReport?.procedure, selectedReport?.dateLabel, selectedReport?.site].filter(Boolean).join(" • ") ||
                   "Procedure metadata not documented"}
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
-              <FileText className="h-4 w-4 text-slate-500" />
+            <div className={`${BADGE} border border-slate-200 text-slate-700`}>
+              <FileText className="mr-2 h-4 w-4" />
               Report {selectedReportIndex + 1} of {reports.length}
             </div>
           </div>
 
-          <div className="space-y-6 px-6 py-6">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Histotype</p>
+          <div className="space-y-6 pt-6">
+            <div className={`grid ${GRID_GAP} md:grid-cols-2 xl:grid-cols-4`}>
+              <div className={SOFT_CARD}>
+                <p className={LABEL_TEXT}>Histotype</p>
                 <p className="mt-2 text-base font-semibold text-slate-900">
                   {selectedReport?.histotype || "Not documented"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Grade</p>
-                <span className={`mt-2 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${gradeTone(selectedReport?.grade)}`}>
+              <div className={SOFT_CARD}>
+                <p className={LABEL_TEXT}>Grade</p>
+                <span className={`${BADGE} mt-2 ${gradeTone(selectedReport?.grade)}`}>
                   {selectedReport?.grade || "Not graded"}
                 </span>
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tumor Size</p>
+              <div className={SOFT_CARD}>
+                <p className={LABEL_TEXT}>Tumor Size</p>
                 <p className="mt-2 text-base font-semibold text-slate-900">
                   {selectedReport?.tumorSize || "Not measured"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Margins</p>
+              <div className={SOFT_CARD}>
+                <p className={LABEL_TEXT}>Margins</p>
                 <div className="mt-2 inline-flex items-center gap-2">
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${
@@ -687,11 +695,11 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Invasion & Risk Flags</p>
+              <p className={SECTION_HEADER}>Invasion & Risk Flags</p>
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {invasionFields.map((field) => (
-                  <div key={field.label} className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label}</p>
+                  <div key={field.label} className="rounded-xl border border-slate-100 bg-white px-4 py-3">
+                    <p className={LABEL_TEXT}>{field.label}</p>
                     <p className={`mt-2 text-base font-semibold ${invasionTone(field.value)}`}>
                       {field.value || "Not assessed"}
                     </p>
@@ -701,7 +709,7 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">IHC Profile</p>
+              <p className={SECTION_HEADER}>IHC Profile</p>
               {ihcEntries.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {ihcEntries.map(([marker, result]) => {
@@ -709,9 +717,7 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
                     return (
                       <span
                         key={marker}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          positive ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-slate-700"
-                        }`}
+                        className={`${BADGE} ${positive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}
                       >
                         {marker}: {result}
                       </span>
@@ -719,16 +725,16 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
                   })}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-slate-500">IHC panel not provided.</p>
+                <p className={BODY_TEXT}>IHC panel not provided.</p>
               )}
             </div>
           </div>
         </section>
       </div>
 
-      <aside className="h-full w-64 overflow-y-auto border-l border-slate-200 pl-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Timeline</p>
-        <ul className="mt-4 space-y-2">
+      <aside className={`${SIDEBAR_WIDTH} shrink-0 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4`}>
+        <p className={SECTION_HEADER}>Timeline</p>
+        <ul className="space-y-2">
           {reports.map((report, index) => {
             const isActive = index === selectedReportIndex;
             return (
@@ -737,15 +743,15 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
                   type="button"
                   onClick={() => setSelectedReportIndex(index)}
                   disabled={!hasMultipleReports}
-                  className={`w-full rounded-2xl border px-4 py-3 text-left transition ${
+                  className={`w-full rounded-lg border px-4 py-3 text-left transition ${
                     isActive
-                      ? "border-slate-900 bg-slate-100"
-                      : "border-slate-200 bg-white hover:border-slate-300"
+                      ? "border-slate-900 bg-slate-100 text-slate-900"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                   } ${hasMultipleReports ? "cursor-pointer" : "cursor-default"}`}
                 >
                   <p className="text-sm font-semibold text-slate-900">{report.dateLabel}</p>
                   {report.procedure ? (
-                    <p className="text-xs text-slate-500">{report.procedure}</p>
+                    <p className={LABEL_TEXT}>{report.procedure}</p>
                   ) : (
                     <p className="text-xs text-slate-400">Procedure not documented</p>
                   )}

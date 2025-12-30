@@ -1,0 +1,11 @@
+export const CARD_BASE = "rounded-xl border border-slate-200 bg-white shadow-sm";
+export const CARD_PADDING = "p-6";
+export const CARD = `${CARD_BASE} ${CARD_PADDING}`;
+export const SOFT_CARD = `${CARD_BASE} bg-slate-50 ${CARD_PADDING}`;
+export const SECTION_HEADER = "text-sm font-medium uppercase tracking-wide text-slate-500 mb-3";
+export const CARD_TITLE = "text-base font-semibold text-slate-900";
+export const BODY_TEXT = "text-sm text-slate-700 leading-relaxed";
+export const LABEL_TEXT = "text-xs text-slate-500";
+export const BADGE = "rounded-full px-2.5 py-0.5 text-xs font-medium";
+export const GRID_GAP = "gap-6";
+export const SIDEBAR_WIDTH = "w-72";
