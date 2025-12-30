@@ -41,6 +41,60 @@ const formatDateLabel = (value?: string) => {
   }
 };
 
+const buildComparisonInterpretation = (latest?: NormalizedReport, previous?: NormalizedReport) => {
+  if (!latest || !previous) return null;
+  const statements: string[] = [];
+
+  const gradeShift = describeShift("Grade", previous.grade, latest.grade);
+  if (gradeShift) {
+    statements.push(
+      gradeShift.includes("newly") || gradeShift.includes("no longer")
+        ? `Differentiation profile shifted: ${gradeShift}.`
+        : `Differentiation profile shifted: ${gradeShift}.`,
+    );
+  } else {
+    statements.push("Differentiation remains unchanged.");
+  }
+
+  const sizeShift = describeShift("Tumor size", previous.tumorSize, latest.tumorSize);
+  if (sizeShift) {
+    const latestSize = numberFromString(latest.tumorSize);
+    const prevSize = numberFromString(previous.tumorSize);
+    const direction =
+      latestSize !== null && prevSize !== null
+        ? latestSize > prevSize
+          ? "increased burden"
+          : "decreased burden"
+        : null;
+    statements.push(`${sizeShift}${direction ? `, suggesting ${direction}` : ""}.`);
+  }
+
+  const marginShift = describeShift("Margins", previous.margins, latest.margins);
+  if (marginShift) {
+    statements.push(`${marginShift}.`);
+  }
+
+  ["LVI", "PNI", "nodal status"].forEach((label) => {
+    const key =
+      label === "nodal status"
+        ? ("lymphNodes" as const)
+        : (label === "LVI" ? ("lvi" as const) : ("pni" as const));
+    const prev = previous[key];
+    const next = latest[key];
+    const shift = describeShift(label, prev, next);
+    if (shift) {
+      statements.push(`${shift}.`);
+    }
+  });
+
+  const ihcSummaryLatest = summarizeIhc(latest.ihcPanel);
+  if (ihcSummaryLatest) {
+    statements.push(`Current biomarker profile: ${ihcSummaryLatest}.`);
+  }
+
+  return statements.filter(Boolean).join(" ");
+};
+
 const coerceString = (value: unknown) => {
   if (value === null || value === undefined) return undefined;
   if (typeof value === "string") return value;
@@ -193,6 +247,50 @@ const gradeSeverity = (grade?: string) => {
   return null;
 };
 
+const describeAggressiveness = (grade?: string) => {
+  if (!grade) return null;
+  if (/g3|poor|high/i.test(grade)) return "high-grade biology";
+  if (/g2|moderate/i.test(grade)) return "intermediate-grade disease";
+  if (/g1|well|low/i.test(grade)) return "well-differentiated features";
+  return `${grade} differentiation`;
+};
+
+const describeMargins = (value?: string) => {
+  if (!value) return null;
+  if (/neg|clear|not involved/i.test(value)) {
+    return "margins remain negative";
+  }
+  if (/pos|involved/i.test(value)) {
+    return "positive/close surgical margins raise recurrence risk";
+  }
+  return `margins reported as ${value}`;
+};
+
+const describeInvasion = (label: string, value?: string) => {
+  if (!value) return null;
+  if (/present|positive|involved/i.test(value)) {
+    return `${label} documented`;
+  }
+  if (/not|absent|negative/i.test(value)) {
+    return `${label} not identified`;
+  }
+  return `${label} noted as ${value}`;
+};
+
+const summarizeIhc = (panel: Record<string, string>, fallback?: string) => {
+  const entries = Object.entries(panel);
+  if (entries.length === 0 && fallback) {
+    return fallback;
+  }
+  const priority = ["ER", "PR", "HER2", "PD-L1", "Ki-67", "TTF-1", "Napsin A", "ALK"];
+  const prioritized = entries
+    .sort(([a], [b]) => priority.indexOf(a) - priority.indexOf(b))
+    .slice(0, 3)
+    .map(([marker, result]) => `${marker} ${result}`);
+  if (!prioritized.length) return null;
+  return prioritized.join("; ");
+};
+
 const buildSingleReportInsight = (report: NormalizedReport | undefined, patient: Patient) => {
   if (!report) {
     return (
@@ -227,6 +325,54 @@ const buildSingleReportInsight = (report: NormalizedReport | undefined, patient:
   ]
     .filter(Boolean)
     .join(" ");
+};
+
+const buildSingleReportInterpretation = (report?: NormalizedReport, patient?: Patient) => {
+  if (!report) return null;
+  const sentences: string[] = [];
+  const aggressiveness = describeAggressiveness(report.grade);
+  const location = report.site || patient?.primaryDiagnosis;
+  const sizeDetail = report.tumorSize ? `Lesion burden is ${report.tumorSize}` : null;
+
+  sentences.push(
+    [
+      report.dateLabel !== "Undated report" ? `Pathology from ${report.dateLabel}` : "Most recent pathology",
+      report.histotype ? `confirms ${report.histotype}` : "confirms malignant involvement",
+      aggressiveness ? `with ${aggressiveness}` : null,
+      location ? `in the ${location}` : null,
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+
+  const marginSentence = describeMargins(report.margins);
+  const invasionStatements = [
+    describeInvasion("LVI", report.lvi),
+    describeInvasion("PNI", report.pni),
+    describeInvasion("nodal involvement", report.lymphNodes),
+  ]
+    .filter(Boolean)
+    .join("; ");
+
+  const ihcSummary = summarizeIhc(report.ihcPanel);
+
+  if (sizeDetail || marginSentence || invasionStatements) {
+    sentences.push(
+      [
+        sizeDetail,
+        marginSentence,
+        invasionStatements ? `${invasionStatements}; consider impact on local control.` : null,
+      ]
+        .filter(Boolean)
+        .join(". "),
+    );
+  }
+
+  if (ihcSummary) {
+    sentences.push(`Key immunophenotype: ${ihcSummary}.`);
+  }
+
+  return sentences.filter(Boolean).join(" ");
 };
 
 const describeShift = (label: string, previous?: string, latest?: string) => {
@@ -400,6 +546,9 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
     () => buildComparisonInsight(latestReport, previousReport),
     [latestReport, previousReport],
   );
+  const clinicalInterpretation = hasMultipleReports
+    ? buildComparisonInterpretation(latestReport, previousReport)
+    : buildSingleReportInterpretation(latestReport ?? selectedReport, patient);
 
   const aiNarrative = hasMultipleReports
     ? aiInvestigation?.pathology_comparison_text?.trim() ||
@@ -440,9 +589,11 @@ export function PathologyView({ patient, aiInsights }: PathologyViewProps) {
             </div>
           </div>
 
-          <p className="mt-4 text-sm leading-relaxed text-slate-800">
-            {aiNarrative}
-          </p>
+          {clinicalInterpretation && (
+            <p className="mt-3 text-sm leading-relaxed text-slate-800">
+              <span className="font-semibold text-slate-900">Clinical interpretation:</span> {clinicalInterpretation}
+            </p>
+          )}
 
           {hasMultipleReports && (
             <div className="mt-4 overflow-hidden rounded-2xl border border-indigo-100 bg-white">

@@ -17,6 +17,7 @@ import {
 import type { BiomarkerPoint, Patient, RadiologyDocument } from "@/types/patient";
 import type { MasterAIResponse } from "@/types/patient-insights";
 import { PathologyView } from "./investigations/pathology-view";
+import { RadiologyView } from "./investigations/radiology-view";
 
 interface InvestigationsTabProps {
   patient: Patient;
@@ -165,49 +166,7 @@ export function InvestigationsTab({ patient, aiInsights }: InvestigationsTabProp
             </Tabs.Content>
 
             <Tabs.Content value="radiology" className="space-y-6 focus:outline-none">
-              <section className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700">
-                  Latest impression
-                </p>
-                <p className="mt-3 text-lg font-semibold text-emerald-900">{latestRadiologyText}</p>
-              </section>
-
-              <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                    <FileImage className="h-4 w-4" />
-                    Scan history
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    {radiologyReports.length ? `${radiologyReports.length} entries` : "No reports"}
-                  </p>
-                </div>
-
-                {radiologyReports.length ? (
-                  <ul className="mt-4 space-y-3">
-                    {radiologyReports.map((report) => (
-                      <li
-                        key={`${report.date}-${report.modality}-${report.summary}`}
-                        className="rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {formatDate(report.date)}
-                          </p>
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-500 shadow-sm">
-                            {report.modality || "Imaging"}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-sm text-slate-600">{report.summary || "—"}</p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-4 text-sm text-slate-500">
-                    No structured radiology reports available.
-                  </p>
-                )}
-              </section>
+              <RadiologyView patient={patient} />
             </Tabs.Content>
 
             <Tabs.Content value="labs" className="focus:outline-none">
