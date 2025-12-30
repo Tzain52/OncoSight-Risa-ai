@@ -4,6 +4,8 @@ COPY package*.json ./
 RUN npm ci
 
 FROM node:20-bookworm AS builder
+ARG GEMINI_API_KEY
+ENV GEMINI_API_KEY=${GEMINI_API_KEY}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
