@@ -20,7 +20,7 @@ import { PathologyView } from "./investigations/pathology-view";
 import { RadiologyView } from "./investigations/radiology-view";
 import { LabsView } from "./investigations/labs-view";
 
-type InvestigationsPanel = "pathology" | "radiology" | "labs";
+type InvestigationsPanel = "pathology" | "radiology" | "laboratory";
 
 interface InvestigationsTabProps {
   patient: Patient;
@@ -117,7 +117,7 @@ const TAB_SHORTCUTS: { combo: string[]; target: string }[] = [
   { combo: ["o", "d"], target: "diagnosis" },
   { combo: ["o", "i"], target: "pathology" },
   { combo: ["o", "r"], target: "radiology" },
-  { combo: ["o", "l"], target: "labs" },
+  { combo: ["o", "l"], target: "laboratory" },
 ];
 
 export function InvestigationsTab({ patient, aiInsights, activePanel, onPanelChange }: InvestigationsTabProps) {
@@ -182,10 +182,10 @@ export function InvestigationsTab({ patient, aiInsights, activePanel, onPanelCha
               Radiology
             </Tabs.Trigger>
             <Tabs.Trigger
-              value="labs"
+              value="laboratory"
               className="rounded-full px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md"
             >
-              Labs
+              Laboratory
             </Tabs.Trigger>
           </Tabs.List>
 
@@ -198,7 +198,7 @@ export function InvestigationsTab({ patient, aiInsights, activePanel, onPanelCha
               <RadiologyView patient={patient} />
             </Tabs.Content>
 
-            <Tabs.Content value="labs" className="focus:outline-none">
+            <Tabs.Content value="laboratory" className="focus:outline-none">
               <LabsView patient={patient} aiInsights={aiInsights} />
             </Tabs.Content>
           </div>

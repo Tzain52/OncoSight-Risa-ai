@@ -11,7 +11,7 @@ import type { MasterAIResponse } from "@/types/patient-insights";
 import type { Patient } from "@/types/patient";
 
 type MainTab = "patient" | "diagnosis" | "investigations" | "references";
-type InvestigationsPanel = "pathology" | "radiology" | "labs";
+type InvestigationsPanel = "pathology" | "radiology" | "laboratory";
 
 interface DashboardTabsClientProps {
   patient: Patient;
@@ -45,7 +45,7 @@ const SHORTCUTS = [
     keys: ["o", "i", "l"],
     handler: (setMain: (tab: MainTab) => void, setPanel: (panel: InvestigationsPanel) => void) => {
       setMain("investigations");
-      setPanel("labs");
+      setPanel("laboratory");
     },
   },
 ];

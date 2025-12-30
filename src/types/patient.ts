@@ -42,6 +42,8 @@ export interface RadiologyDocument extends DocumentLink {
 export interface Patient {
   patientId: string;
   name: string;
+  dateOfBirth?: string | null;
+  birthDate?: string | null;
   bmi: string | null;
   bsa: string | null;
   age: number | null;

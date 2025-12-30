@@ -3,38 +3,69 @@
   High-density “single pane of glass” dashboard for medical oncologists.
 </p>
 
-## Project Intent
+## Product Goals
 
-| Problem | Goal | Design Tenets |
+| Objective | Description | Success Signals |
 | --- | --- | --- |
-| Oncologists juggle 20+ tabs (PDFs, labs, notes) and suffer alert fatigue, risking missed safety signals (e.g., rising creatinine on cisplatin). | Build a unified “safety-first” dashboard that reduces cognitive load and surfaces critical signals with progressive disclosure. | High signal-to-noise, trustworthy visual language (Shadcn/UI energy), medical-grade typography, minimal ornamentation, motion used only for context. |
+| **Reduce cognitive overload** | Consolidate imaging, labs, pathology, genomics, and AI insights into one “single pane of glass.” | Oncologists spend fewer clicks navigating disparate systems; safety-critical data is within one scroll. |
+| **Surface safety risks early** | Highlight renal, hepatic, hematologic risks plus abnormal biomarkers with intuitive badges and charts. | Clinicians can spot deteriorations (e.g., climbing creatinine) before treatment decisions. |
+| **Enable rapid investigations** | Provide keyboard-driven navigation (O+R/L/P/D) and harmonized design tokens for fast mental parsing. | Sub-tab switching and chart loading is instant; data feels uniform and predictable. |
+| **Support collaborative documentation** | References tab aggregates radiology/pathology/genomics/notes for multidisciplinary review. | Teams can open source documents directly from the dashboard without chasing links. |
 
-## Tech Stack
-
-- **Framework:** Next.js 14 App Router (`src/app`), React Server Components by default for fast, composable data delivery.
-- **Language:** TypeScript everywhere for strict domain modeling of oncologic entities.
-- **Styling:** Tailwind CSS with PostCSS pipeline, `clsx` + `tailwind-merge` for ergonomic variant composition.
-- **Icons & Data Viz:** `lucide-react` for consistent semantic iconography, `recharts` for trendlines, lab value trajectories, and safety signal overlays.
-
-## High-Level Architecture
+## Architecture Overview
 
 ```
 src/
-├── app/               # App Router entrypoints (RSC-first pages, layouts, metadata)
-│   ├── (dashboard)/   # Future parallel routes for patient snapshot, treatment course, labs
-│   └── api/           # Edge/server actions for data ingestion & normalization
-├── components/        # Shared UI primitives (cards, signal badges, hydration boundaries)
-├── features/          # Domain modules (labs, regimens, toxicity, decision support)
+├── app/
+│   ├── dashboard/[id]/    # Patient dashboard entry rendered via RSC + Client components
+│   └── api/               # (Reserved) ingest/AI endpoints
+├── components/
+│   ├── tabs/              # Diagnosis, Investigations (Pathology/Radiology/Labs), References, etc.
+│   └── dashboard-tabs-client.tsx  # Top-level tab controller + keyboard routing
 ├── lib/
-│   ├── data/          # Fetchers, adapters, FHIR ingestion, streaming transforms
-│   └── ui/            # Tailwind tokens, theme helpers, motion presets
-└── styles/            # Tailwind globals, CSS variables for medical palette
+│   ├── data-service.ts    # CSV → Patient mapping, JSON parsing helpers
+│   └── generatePatientInsights.ts # Gemini-driven AI summaries (fallback-safe)
+├── types/                 # Patient & insight TypeScript models
+└── public/                # Static assets
 ```
 
-### Progressive Disclosure Layers
-1. **Signal Layer** – always-visible patient safety strip (labs, vitals, toxicity alerts).
-2. **Context Layer** – collapsible cards for regimen timeline, imaging, genomics.
-3. **Exploration Layer** – deep dives (full labs grid, note timelines) on demand.
+- **Render model:** Next.js 16 App Router with React Server Components feeding Client components for dynamic tabs and charts.
+- **Design system:** Shared Tailwind tokens in `src/components/tabs/design-system.ts` ensure cards, typography, badges, spacing, and sidebars stay uniform.
+- **Charts & motion:** Recharts powers tumor-size / biomarker plots; Framer Motion adds subtle entrance animations. Radix Tabs orchestrate sub-panels.
+- **Keyboard control:** `DashboardTabsClient` owns global listeners for sequences like `O + R` (Radiology) and delegates to Investigations Tab.
+
+## Data Model
+
+Patient records are CSV-backed with JSON-encoded columns for multi-entry domains.
+
+```ts
+type Patient = {
+  patientId: string;
+  name: string;
+  age?: number;
+  primaryDiagnosis?: string;
+  radiologyReports?: RadiologyDocument[];
+  pathologyDetails?: PathologyDetails[];
+  genomicReports?: GenomicReport[];
+  providerNotes?: DocumentLink[];
+  biomarkerTrend?: BiomarkerPoint[];
+  tumorSizeTrend?: TumorTrendPoint[];
+  aiInsights?: MasterAIResponse;
+  // ... numerous safety flags (renal, liver), treatment timelines, etc.
+};
+```
+
+- **Normalization:** `data-service.ts` parses CSV rows, safely JSON-parses embedded arrays, coerces types, and fills reasonable defaults (e.g., fallback pathology summaries).
+- **AI insights:** `generatePatientInsights.ts` prompts Gemini for structured data that feeds sidebar safety flags and narrative text, with deterministic fallbacks on errors.
+- **References aggregation:** `references-tab.tsx` merges radiology/pathology/genomics/notes sources, normalizing links from structured fields or free-text lists.
+
+## Key Tradeoffs & Assumptions
+
+1. **Static dataset vs live EHR:** The MVP consumes CSV + JSON blobs for rapid iteration. Integrating live FHIR feeds will require auth, batching, and stricter PHI handling.
+2. **Client-heavy investigations:** Radiology/Labs charts render client-side via Recharts for interactivity. This assumes manageable payload sizes; SSR charts would need a different lib.
+3. **Keyboard-first UX:** Shortcut sequences optimize for power users but assume desktop usage. Mobile parity is secondary for this release.
+4. **Design tokens in TS (not Tailwind config):** Tokens live in `design-system.ts` so components import strings directly. This keeps refactors simple but duplicates values vs a Tailwind theme.
+5. **AI dependency:** Gemini insights are optional; when unavailable, deterministic summaries kick in. We assume stable API quotas and handle malformed responses defensively.
 
 ## Getting Started
 
@@ -55,13 +86,3 @@ npm run dev
 2. Paste your real Gemini key in `.env.local` (never commit secrets).
 3. Restart `npm run dev` after changes.
 
-## Immediate Next Steps
-1. Define design tokens (color ramps, typography scale, spacing grid) in `tailwind.config.ts`.
-2. Scaffold shared primitives (Panel, MetricTile, TrendSparkline) in `src/components`.
-3. Integrate mock patient dataset + FHIR ingestion adapters within `src/lib/data`.
-
-## Tooling Notes
-
-- ESLint + Next.js rules ensure server/client boundary safety.
-- `@/` alias resolves to `src/` for clean imports.
-- This repo intentionally ships without UI features yet—focus is platform skeleton.

@@ -15,6 +15,7 @@ export interface PathologyDelta {
 }
 
 export interface MasterAIResponse {
+  current_status_summary?: string | null;
   sidebar: SidebarInsights;
   charts: {
     tumor_size: {

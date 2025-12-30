@@ -1,12 +1,14 @@
 "use client";
 
-import { Activity, AlertTriangle, ArrowRight, Dna, Pill, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Dna, Pill, TrendingUp, XCircle } from "lucide-react";
 
+import type { MasterAIResponse } from "@/types/patient-insights";
 import type { Patient } from "@/types/patient";
 import { BADGE, BODY_TEXT, CARD, CARD_TITLE, LABEL_TEXT, SECTION_HEADER } from "./design-system";
 
 interface DiagnosisTabProps {
   patient: Patient;
+  aiInsights?: MasterAIResponse | null;
 }
 
 type TreatmentLine = {
@@ -175,6 +177,42 @@ const responseTone = (response: string) => {
   return "text-slate-500";
 };
 
+const STATUS_TONE_DEFAULT = {
+  text: "text-slate-700",
+  badge: "border border-slate-200 bg-slate-50 text-slate-700",
+  border: "border-slate-200",
+  icon: "text-slate-500",
+};
+
+const statusTone = (value?: string | null) => {
+  const normalized = value?.toLowerCase() ?? "";
+  if (/progress|pd/.test(normalized)) {
+    return {
+      text: "text-rose-700",
+      badge: "border border-rose-200 bg-rose-50 text-rose-700",
+      border: "border-rose-200 bg-rose-50/40",
+      icon: "text-rose-600",
+    };
+  }
+  if (/stable|sd/.test(normalized)) {
+    return {
+      text: "text-amber-700",
+      badge: "border border-amber-200 bg-amber-50 text-amber-800",
+      border: "border-amber-200 bg-amber-50/40",
+      icon: "text-amber-600",
+    };
+  }
+  if (/response|pr|cr/.test(normalized)) {
+    return {
+      text: "text-emerald-700",
+      badge: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+      border: "border-emerald-200 bg-emerald-50/40",
+      icon: "text-emerald-600",
+    };
+  }
+  return STATUS_TONE_DEFAULT;
+};
+
 const recurrenceBadge = (status?: string | null) => {
   const normalized = status?.toLowerCase() ?? "";
   if (!normalized) {
@@ -261,7 +299,7 @@ const buildTrajectorySummary = (initialStage?: string | null, currentStage?: str
   return null;
 };
 
-export function DiagnosisTab({ patient }: DiagnosisTabProps) {
+export function DiagnosisTab({ patient, aiInsights }: DiagnosisTabProps) {
   const driverMutation = getDriverMutation(patient);
   const pdL1Percent = parsePercent(patient.pdL1Expression);
   const tmbDisplay = parseTmb(patient.tumorMutationalBurden);
@@ -292,6 +330,13 @@ export function DiagnosisTab({ patient }: DiagnosisTabProps) {
     null;
   const recurrence = recurrenceBadge(patient.recurrenceStatus);
 
+  const aiStatus = aiInsights?.current_status_summary?.trim();
+  const fallbackStatus =
+    patient.responsePerLine ||
+    (patient as Patient & { response_per_line?: string }).response_per_line ||
+    "";
+  const tone = statusTone(aiStatus || fallbackStatus || "");
+
   return (
     <div className="space-y-6">
       <section className={CARD}>
@@ -305,6 +350,21 @@ export function DiagnosisTab({ patient }: DiagnosisTabProps) {
               {patient.histologicType || "Histology not documented"}{" "}
               {patient.tumorGrade ? `• Grade ${patient.tumorGrade}` : null}
             </p>
+            <div
+              className={`mt-3 flex items-start gap-3 rounded-xl border bg-white px-4 py-3 ${tone.border}`}
+            >
+              <TrendingUp className={`h-5 w-5 ${tone.icon}`} />
+              <div>
+                <p className={`${LABEL_TEXT} mb-1 text-xs`}>Current disease status</p>
+                {aiStatus ? (
+                  <p className={`text-sm font-medium ${tone.text}`}>{aiStatus}</p>
+                ) : fallbackStatus ? (
+                  <span className={`${BADGE} ${tone.badge}`}>{fallbackStatus}</span>
+                ) : (
+                  <p className={LABEL_TEXT}>Status not documented.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="w-full max-w-xl space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4">

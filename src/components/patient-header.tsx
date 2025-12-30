@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { FileDown } from "lucide-react";
 
 import type { Patient } from "@/types/patient";
+import { usePDFGenerator } from "@/hooks/use-pdf-generator";
 
 interface PatientHeaderProps {
   patient: Patient;
@@ -28,6 +32,8 @@ const Field = ({
 );
 
 export function PatientHeader({ patient }: PatientHeaderProps) {
+  const { isGenerating, generatePDF } = usePDFGenerator(patient);
+
   return (
     <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-8 border-b border-slate-200 bg-white/95 px-8 py-5 shadow-sm backdrop-blur">
       <div className="flex flex-1 flex-wrap items-center gap-8">
@@ -63,13 +69,33 @@ export function PatientHeader({ patient }: PatientHeaderProps) {
         </div>
       </div>
 
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow hover:border-slate-300 hover:bg-slate-50"
-      >
-        <span className="text-base">←</span>
-        Back to patients
-      </Link>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={generatePDF}
+          disabled={isGenerating}
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isGenerating ? (
+            <span className="flex items-center gap-2">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+              Generating Clinical Report...
+            </span>
+          ) : (
+            <>
+              <FileDown className="h-4 w-4" />
+              Export Summary
+            </>
+          )}
+        </button>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow hover:border-slate-300 hover:bg-slate-50"
+        >
+          <span className="text-base">←</span>
+          Back to patients
+        </Link>
+      </div>
     </header>
   );
 }

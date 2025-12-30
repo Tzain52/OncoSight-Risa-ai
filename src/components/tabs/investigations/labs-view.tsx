@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Droplet, FlaskConical, ThermometerSun } from "lucide-react";
+import { AlertCircle, AlertTriangle, Droplet, FlaskConical, ThermometerSun } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
@@ -21,6 +21,24 @@ type BiomarkerTrendPoint = {
   marker?: string;
   value?: number | null;
   unit?: string | null;
+};
+
+const ABNORMAL_KEYWORDS = [
+  "low",
+  "high",
+  "elevated",
+  "anemia",
+  "thrombocytopenia",
+  "leukopenia",
+  "hyponatremia",
+  "hyperkalemia",
+  "jaundice",
+];
+
+const isAbnormal = (value?: string | null) => {
+  if (!value) return false;
+  const normalized = value.toLowerCase();
+  return ABNORMAL_KEYWORDS.some((keyword) => normalized.includes(keyword));
 };
 
 interface LabsViewProps {
@@ -92,6 +110,15 @@ const LabsChartTooltip = ({ active, payload }: any) => {
 
 export function LabsView({ patient, aiInsights }: LabsViewProps) {
   const biomarkerTrendRaw = (patient as unknown as Record<string, string | undefined>)["Biomarker_Trend_JSON"];
+  const abnormalFlagsRaw =
+    (patient as unknown as Record<string, string | undefined>)["Abnormal lab flags"] || (patient as unknown as Record<string, string | undefined>)["abnormal_lab_flags"];
+  const abnormalFlags =
+    abnormalFlagsRaw && abnormalFlagsRaw !== "NaN"
+      ? abnormalFlagsRaw
+          .split(/;+/)
+          .map((flag) => flag.trim())
+          .filter(Boolean)
+      : [];
 
   const biomarkerSeries = useMemo(() => {
     const parsed = safeParseArray<BiomarkerTrendPoint>(biomarkerTrendRaw);
@@ -141,15 +168,25 @@ export function LabsView({ patient, aiInsights }: LabsViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className={`grid ${GRID_GAP} lg:grid-cols-3`}>
-        <section className={CARD}>
-          <p className={SECTION_HEADER}>AI Insight</p>
-          <p className={BODY_TEXT}>
-            {aiInsights?.investigations?.labs_summary ||
-              "No AI metabolics summary generated yet. Labs will reflect deterministic values below."}
-          </p>
+      {abnormalFlags.length > 0 && (
+        <section className={`${CARD} border-rose-100 bg-rose-50 text-rose-700`}>
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5" />
+            <div>
+              <p className={SECTION_HEADER}>Critical lab alerts</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {abnormalFlags.map((flag, index) => (
+                  <span key={`${flag}-${index}`} className={`${BADGE} bg-rose-100 text-rose-700`}>
+                    {flag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
+      )}
 
+      <div className={`grid ${GRID_GAP} lg:grid-cols-2`}>
         <section className={CARD}>
           <p className={SECTION_HEADER}>Organ Function</p>
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -193,6 +230,14 @@ export function LabsView({ patient, aiInsights }: LabsViewProps) {
           )}
         </section>
       </div>
+
+      <section className={CARD}>
+        <p className={SECTION_HEADER}>AI Insight</p>
+        <p className={BODY_TEXT}>
+          {aiInsights?.investigations?.labs_summary ||
+            "No AI metabolics summary generated yet. Labs will reflect deterministic values below."}
+        </p>
+      </section>
 
       <section className={CARD}>
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -263,6 +308,19 @@ interface LabPanelProps {
   entries: { label: string; value: string }[];
 }
 
+const LabValue = ({ value }: { value: string }) => {
+  if (!value) {
+    return <span className="text-slate-400">—</span>;
+  }
+  const abnormal = isAbnormal(value);
+  return (
+    <span className={`flex items-center gap-1 ${abnormal ? "text-rose-600 font-medium" : "text-slate-700"}`}>
+      {abnormal && <AlertCircle className="h-3 w-3" />}
+      {value}
+    </span>
+  );
+};
+
 const LabPanel = ({ title, icon, entries }: LabPanelProps) => {
   return (
     <div className={CARD}>
@@ -275,7 +333,9 @@ const LabPanel = ({ title, icon, entries }: LabPanelProps) => {
           {entries.map((entry, index) => (
             <div key={`${entry.label}-${index}`} className="flex items-baseline justify-between rounded-2xl bg-slate-50 px-3 py-2">
               <dt className="text-slate-500">{entry.label}</dt>
-              <dd className="font-semibold text-slate-900">{entry.value || "—"}</dd>
+              <dd>
+                <LabValue value={entry.value} />
+              </dd>
             </div>
           ))}
         </dl>

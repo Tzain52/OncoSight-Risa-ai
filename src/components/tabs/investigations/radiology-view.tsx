@@ -63,7 +63,18 @@ const formatDate = (value?: string) => {
   );
 };
 
-const RadiologyTooltip = ({ active, payload }: any) => {
+interface RadiologyTooltipProps {
+  active?: boolean;
+  payload?: {
+    payload: {
+      label?: string;
+      formattedDate?: string;
+    };
+    value: number;
+  }[];
+}
+
+const RadiologyTooltip = ({ active, payload }: RadiologyTooltipProps) => {
   if (!active || !payload?.length) return null;
   const point = payload[0];
   return (
@@ -157,6 +168,7 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
     : [];
 
   const hasTrend = tumorTrend.length >= 2;
+  const hasSinglePoint = tumorTrend.length === 1;
 
   return (
     <div className="flex min-h-[520px] gap-6">
@@ -226,9 +238,26 @@ export function RadiologyView({ patient }: RadiologyViewProps) {
               </ResponsiveContainer>
             </div>
           </section>
+        ) : hasSinglePoint ? (
+          <section className={CARD}>
+            <div className="flex items-center justify-between">
+              <p className={SECTION_HEADER}>RECIST Measurement</p>
+              <p className={LABEL_TEXT}>Single scan</p>
+            </div>
+            <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+              <p className={LABEL_TEXT}>{formatDate(tumorTrend[0].date)}</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-900">
+                {tumorTrend[0].size} mm
+              </p>
+              {tumorTrend[0].label && <p className={BODY_TEXT}>{tumorTrend[0].label}</p>}
+            </div>
+            <p className={`${LABEL_TEXT} mt-3`}>
+              Need at least two structured measurements to render a trajectory.
+            </p>
+          </section>
         ) : (
           <section className={`${CARD} flex h-72 items-center justify-center border-dashed text-sm text-slate-500`}>
-            Insufficient structured RECIST data to render trajectory.
+            No structured RECIST data available.
           </section>
         )}
 

@@ -103,10 +103,7 @@ export async function SidebarIntelligence({ patient }: SidebarIntelligenceProps)
                       : "border-slate-200 bg-white"
                   }`}
                 >
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    {item.priority} priority
-                  </p>
-                  <p className="mt-1 text-base font-semibold text-slate-900">{item.label}</p>
+                  <p className="text-base font-semibold text-slate-900">{item.label}</p>
                   <p className="text-sm text-slate-600">{item.value}</p>
                 </div>
               ))}
