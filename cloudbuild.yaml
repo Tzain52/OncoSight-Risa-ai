@@ -1,0 +1,17 @@
+substitutions:
+  _IMAGE: "asia-south1-docker.pkg.dev/oncosight-risalabs/onco/onco:v1"
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      [
+        "build",
+        "--tag",
+        "$_IMAGE",
+        "--build-arg",
+        "GEMINI_API_KEY=$_GEMINI_API_KEY",
+        ".",
+      ]
+
+images:
+  - $_IMAGE
