@@ -63,9 +63,8 @@ type Patient = {
 
 ## Key Tradeoffs & Assumptions
 
-1. **CSV-driven ingestion:** Trading real-time EHR data for a deterministic dataset simplified onboarding but assumes periodic manual refreshes.
-2. **Client-side visualizations:** Recharts + Framer Motion keep biomarker/radiology panels responsive but push rendering work to the browser; low-powered tablets may struggle.
-3. **Keyboard-first workflows:** “O + _” sequences target desktop oncologists; mobile experiences are intentionally deprioritized for v1.
-4. **AI reliance with fallbacks:** Gemini informs narratives/status lines, yet every call has hard fallbacks to prevent blank states when quotas or prompts fail.
-5. **Event bus for shortcuts:** Export/back shortcuts broadcast DOM events rather than passing callbacks through deep trees—simpler wiring, but assumes listeners register globally.
+1. **Initial Latency vs. Instant Navigation (The "Mega Query" Tradeoff):** We sacrifice initial page-load speed (waiting for the single, massive server-side fetch) to gain zero-latency tab switching, filtering, and interaction during the active review session.
+2. **Model Reasoning Depth vs. Velocity (The Gemini Flash Tradeoff):** We chose Gemini Flash over larger "reasoning" models (like Pro/Ultra), trading off deep inferential deduction capabilities for the critical speed and massive context window needed at the point of care. **"What we can do is instead of doing  LLM query at run time we can make run it everytime there is an update in the system and store the response of AI query in databse."**
+3. **Retrospective Synthesis vs. Predictive Diagnostics:** We prioritized perfecting the visual synthesis of past data to reduce current cognitive load, postponing the development of future-looking predictive models.
+4. **Client-Side Complexity vs. Power-User Interactivity (The UX Tradeoff):** We accepted higher complexity in the React client architecture to enable app-like features such as global keyboard shortcuts, prioritizing power-user speed over simpler server-rendered views.
 
